@@ -1,0 +1,78 @@
+Task 1 - Rating prediction
+- Train and validate on non-zero ratings only; clip predictions to [1, 5].
+- Base models:
+  - Biased SVD and SVD++ (Surprise).
+  - SVD++ (numba SGD) whose implicit set contains every known interaction of the
+    user, including 0-star shelvings and unlabeled test pairs.
+  - Bayesian factorization machine (myFM, Gibbs sampling) in the "Bayesian SVD++
+    flipped" setup: user/book one-hot plus normalized sets of the books each user
+    read and the users who read each book.
+  - Residual item neighborhoods.
+  - Item- and user-kNN on bias residuals, with similarities from all interactions.
+  - Implicit-ALS affinity scores.
+  - User/book history statistics and smoothed per-user/per-book star distributions.
+- Stacker: average of three gradient-boosted regressors (different seeds),
+  validated on a 15% holdout; base models refit on all data for the test.
+
+Task 2 - Item comparison
+- Per-candidate features:
+  - Item-kNN affinity to the user's history (Jaccard, cosine, RP3beta graphs).
+  - User-kNN affinity.
+  - Implicit ALS and BPR scores.
+  - Popularity and mean rating.
+  - Overlap between the user's active period and the book's activity period.
+- Classifier: gradient boosting on [item1, item2, difference, user context],
+  symmetrized by swapping the candidates.
+- Training pairs: 5 rounds, each holding out 30k interactions and refitting all
+  base models on the rest; negatives are the item of a random interaction.
+- Rule: a candidate already in the user's history is always the negative.
+
+Task 3 - Temporal rating prediction
+- Same non-zero rating stack as Task 1, plus timestamp features:
+  - Time-binned user/book and global period effects.
+  - User rating trends.
+  - Strictly earlier and nearby-in-time local rating statistics.
+  - Joint temporal bias model.
+  - Neighborhood predictions with time-decayed weights.
+  - Book age and activity around the rating time; user tenure.
+  - timeSVD++ (user-bias drift, per-period book bias, same-day user bias,
+    drifting user factors, full implicit set).
+
+Task 4 - Temporal item comparison
+- Task 2 pipeline (same classifier, training rounds and seen-item rule).
+- Added features at the query time t:
+  - Book interaction count and popularity share within +-15/45/180/365 days.
+  - Time since the book's first and until its last activity.
+  - The user's own activity around t.
+  - kNN affinity to the user's reads weighted by closeness in time
+    (half-lives 30/180/730 days).
+
+Task 5 - Sequential item comparison
+- Task 4 pipeline with each user's last training timestamp as the query time.
+- Added order-based features:
+  - Directed transition counts and probabilities from the user's last 1/3/10
+    books (lags 1-3, position-decayed).
+  - RP3beta affinity to the most recent books.
+  - Share of the candidate's reads that happen after the user's last activity.
+- Validation: final book held out for 60k users.
+
+Task 6 - Time until next interaction
+- Model: absolute-error gradient boosting (predicts conditional medians);
+  final prediction averages three boosters.
+- Features:
+  - Causal per-user gap histories.
+  - Item and timestamp features.
+  - The next book's reading dates by other users, relative to the user's last
+    activity.
+  - Time left until the end of the data.
+  - Number of interactions that follow the predicted one.
+  - Co-reader features: time between other users' reads of the user's recent
+    books and the next book, and the gap this implies for the user.
+  - Joint feature: the book's reading dates weighted by the user's own gap
+    distribution.
+- Training rows: each user's last 30 gaps (near-end gaps up-weighted) plus
+  users' final gaps (weighted 5x).
+
+General
+- Each task is validated on held-out users or rows, then refit on all data.
+- Code: assignment1.py (main) and models/ (helpers). Predictions: my_prediction/.
