@@ -35,3 +35,13 @@ Predictions are written to `my_prediction/` (change with `--output-dir`).
 Running every task takes several hours on a laptop; Tasks 1 and 3 are the slowest.
 Random seeds are fixed, but multithreaded libraries (implicit, myfm) can introduce
 small run-to-run differences.
+
+## AI use
+
+I used Claude (Anthropic) as an assistant during this assignment:
+- Brainstorming modeling ideas and features for each task.
+- Debugging errors in the code.
+- Searching the web for established recommender-system methods (e.g. SVD++,
+  timeSVD++, Bayesian factorization machines, item/user kNN, RP3beta) and
+  applying them to the tasks.
+- Writing and reorganizing code into `assignment1.py` and the `models/` package.
