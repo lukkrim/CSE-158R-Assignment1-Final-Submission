@@ -44,4 +44,3 @@ I used Claude (Anthropic) as an assistant during this assignment:
 - Searching the web for established recommender-system methods (e.g. SVD++,
   timeSVD++, Bayesian factorization machines, item/user kNN, RP3beta) and
   applying them to the tasks.
-- Writing and reorganizing code into `assignment1.py` and the `models/` package.
