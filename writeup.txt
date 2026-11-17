@@ -76,3 +76,4 @@ Task 6 - Time until next interaction
 General
 - Each task is validated on held-out users or rows, then refit on all data.
 - Code: assignment1.py (main) and models/ (helpers). Predictions: my_prediction/.
+- GitHub: https://github.com/lukkrim/CSE-158R-Assignment1-Final-Submission
